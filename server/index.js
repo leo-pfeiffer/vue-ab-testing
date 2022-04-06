@@ -3,6 +3,8 @@ const express = require("express")
 const app = express()
 const cors = require('cors')
 
+const db = require("./database.js")
+
 app.use(cors())
 
 // Server port
@@ -19,12 +21,31 @@ app.get("/", (req, res, next) => {
 });
 
 // A/B testing endpoint
-app.get("/track_experiment", (req, res) => {
+app.post("/track_experiment", (req, res) => {
     const experiment = req.query.experiment;
     const variant = req.query.variant;
     const event = req.query.event;
-    console.log(experiment, variant, event);
-    res.json({"message":"Ok"})
+
+    if (experiment === null || variant === null || event === null) {
+        res.status(400);
+        return;
+    }
+
+    // Insert into database
+    const sql = 'INSERT INTO experiment (name, variant, event) VALUES (?, ?, ?)'
+    const params = [experiment, variant, event];
+
+    db.run(sql, params, function (error, result) {
+        if (error){
+            res.status(400).json({"error": error.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": params,
+            "id" : this.lastID
+        })
+    })
 })
 
 // 404 not found for other requests
