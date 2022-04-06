@@ -1,15 +1,26 @@
 const AlephBet = require("alephbet");
 
 /**
+ * Post an experiment result to the tracking server.
+ * */
+const postResult = (experiment, variant, event) => {
+    let URL = "http://localhost:5555/track_experiment"
+    URL += `?experiment=${experiment}&variant=${variant}&event=${event}`
+    fetch(URL, {
+        method: 'POST'
+    }).catch(console.error)
+}
+
+/**
  * Wrapper for an A/B testing adapter for AlephBet experiments.
  * */
 const makeAdapter = () => {
     return {
         experiment_start: async function (experiment, variant) {
-            console.log(experiment, variant, 'participate')
+            postResult(experiment.name, variant, 'participate')
         },
         goal_complete: async function (experiment, variant, event_name) {
-            console.log(experiment.name, variant, event_name)
+            postResult(experiment.name, variant, event_name)
         },
     };
 };
