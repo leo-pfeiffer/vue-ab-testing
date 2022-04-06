@@ -6,6 +6,15 @@
 </template>
 
 <script>
+import {
+  experimentVariants,
+  makeAdapter,
+  makeExperiment,
+} from "@/analytics/ab-testing";
+import AlephBet from "alephbet";
+
+let goal;
+
 export default {
   name: 'HelloWorld',
   data() {
@@ -13,8 +22,17 @@ export default {
       counter: 0,
     }
   },
+  mounted() {
+    const name = "button color";
+    const variants = experimentVariants[name];
+    const adapter = makeAdapter();
+    const experiment = makeExperiment(name, variants, adapter);
+    goal = new AlephBet.Goal("button clicked", {unique: false});
+    experiment.add_goal(goal);
+  },
   methods: {
     increment: function() {
+      goal.complete()
       this.counter++;
     }
   }
